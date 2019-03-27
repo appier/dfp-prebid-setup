@@ -182,7 +182,7 @@ def create_line_item_configs(prices, order_id, placement_ids, ad_unit_ids, bidde
   """
 
   # The DFP targeting value ID for this `hb_bidder` code.
-  hb_bidder_value_id = HBBidderValueGetter.get_value_id(bidder_code)
+  hb_bidder_value_id = HBBidderValueGetter.get_value_id(bidder_code) if bidder_code else None
 
   line_items_config = []
   for price in prices:
@@ -191,7 +191,7 @@ def create_line_item_configs(prices, order_id, placement_ids, ad_unit_ids, bidde
 
     # Autogenerate the line item name.
     line_item_name = u'{bidder_code}: HB ${price}'.format(
-      bidder_code=bidder_code,
+      bidder_code=bidder_code if bidder_code else 'all_bidders',
       price=price_str
     )
 
@@ -303,7 +303,7 @@ def main():
 
   bidder_code = getattr(settings, 'PREBID_BIDDER_CODE', None)
   if bidder_code is None:
-    raise MissingSettingException('PREBID_BIDDER_CODE')
+    logger.warning('PREBID_BIDDER_CODE is not specified. Create one set of line items for all bidders.')
 
   price_buckets = getattr(settings, 'PREBID_PRICE_BUCKETS', None)
   if price_buckets is None:
