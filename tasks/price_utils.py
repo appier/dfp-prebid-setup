@@ -53,12 +53,7 @@ def get_prices_array(price_bucket):
   """
 
   # Arbitrary max CPM to prevent large user errors.
-  cpm_max_allowed = 500.00
-  end_cpm = (
-    price_bucket['max'] if 
-    price_bucket['max'] < cpm_max_allowed else 
-    cpm_max_allowed)
-
+  end_cpm = price_bucket['max']
   start_cpm = price_bucket['min'] if price_bucket['min'] >=0 else 0.00
   increment = price_bucket['increment']
   precision = price_bucket['precision']
