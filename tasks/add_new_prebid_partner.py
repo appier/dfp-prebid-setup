@@ -343,7 +343,10 @@ def main():
       value_start_format=color.BLUE,
     ))
 
-  ok = input('Is this correct? (y/n)\n')
+  if getattr(settings, 'NO_CONFIRM'):
+    ok = 'y'
+  else:
+    ok = input('Is this correct? (y/n)\n')
 
   if ok != 'y':
     logger.info('Exiting.')
