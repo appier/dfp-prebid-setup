@@ -94,7 +94,7 @@ def create_duplicate_creative_configs(bidder_code, order_name, advertiser_id,
   creative_configs = []
   for creative_num in range(1, num_creatives + 1):
     config = create_creative_config(
-      name=build_creative_name(bidder_code, order_name, creative_num),
+      name=build_creative_name(bidder_code if bidder_code else 'all_bidders', order_name, creative_num),
       advertiser_id=advertiser_id,
     )
     creative_configs.append(config)

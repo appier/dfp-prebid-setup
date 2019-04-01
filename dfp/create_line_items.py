@@ -56,12 +56,15 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
   # https://github.com/googleads/googleads-python-lib/blob/master/examples/dfp/v201802/line_item_service/target_custom_criteria.py
   # create custom criterias
 
-  hb_bidder_criteria = {
-    'xsi_type': 'CustomCriteria',
-    'keyId': hb_bidder_key_id,
-    'valueIds': [hb_bidder_value_id],
-    'operator': 'IS'
-  }
+  children = []
+  if hb_bidder_value_id is not None:
+    hb_bidder_criteria = {
+      'xsi_type': 'CustomCriteria',
+      'keyId': hb_bidder_key_id,
+      'valueIds': [hb_bidder_value_id],
+      'operator': 'IS'
+    }
+    children.append(hb_bidder_criteria)
 
   hb_pb_criteria = {
     'xsi_type': 'CustomCriteria',
@@ -69,6 +72,7 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
     'valueIds': [hb_pb_value_id],
     'operator': 'IS'
   }
+  children.append(hb_pb_criteria)
 
   # The custom criteria will resemble:
   # (hb_bidder_criteria.key == hb_bidder_criteria.value AND
@@ -76,7 +80,7 @@ def create_line_item_config(name, order_id, placement_ids, ad_unit_ids, cpm_micr
   top_set = {
     'xsi_type': 'CustomCriteriaSet',
     'logicalOperator': 'AND',
-    'children': [hb_bidder_criteria, hb_pb_criteria]
+    'children': children
   }
 
   # https://developers.google.com/doubleclick-publishers/docs/reference/v201802/LineItemService.LineItem
