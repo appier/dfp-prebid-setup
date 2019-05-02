@@ -87,6 +87,8 @@ def main():
 
         os.unlink(settings.GOOGLEADS_YAML_FILE)
 
+        sg.PopupOK('Creation of line items completed!')
+
     except Exception as e:
         sg.PopupOK('Failed: ' + str(e))
 
