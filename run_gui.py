@@ -43,12 +43,12 @@ def main():
     try:
         # basic setup
         values = setup_basic_info()
+        if not values:
+            return
         settings.DFP_USER_EMAIL_ADDRESS = values['_NAME_']
         settings.DFP_ORDER_NAME = values['_ORDER_']
         settings.DFP_ADVERTISER_NAME = values['_ADVERTISER_']
-        currency = values['_CURRENCY_'][0]
-        if not values:
-            return
+        settings.DFP_CURRENCY_CODE = currency = values['_CURRENCY_'][0]
 
         granularity_type = 'dense'  # TODO: make it changeable
         multiplier = price_multipliers[currency]
@@ -79,7 +79,7 @@ def main():
             msg = 'Creating line items for price range: {min} - {max}; increment={inc}, {currency})'.format(
                 min=min_price, max=max_price, inc=increment, currency=currency
             )
-            ret = sg.OneLineProgressMeter(DEFAULT_TITLE, i, len(price_buckets) - 1, 'progress_key', msg, orientation='h')
+            ret = sg.OneLineProgressMeter(DEFAULT_TITLE, i + 1, len(price_buckets) 'progress_key', msg, orientation='h')
             if not ret:
                 break
 

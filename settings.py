@@ -59,7 +59,7 @@ DFP_USE_EXISTING_ORDER_IF_EXISTS = False
 
 # Optional
 # The currency to use in DFP when setting line item CPMs. Defaults to 'USD'.
-# DFP_CURRENCY_CODE = 'USD'
+DFP_CURRENCY_CODE = 'USD'
 
 #########################################################################
 # PREBID SETTINGS
