@@ -79,11 +79,16 @@ def main():
             msg = 'Creating line items for price range: {min} - {max}; increment={inc}, {currency})'.format(
                 min=min_price, max=max_price, inc=increment, currency=currency
             )
-            ret = sg.OneLineProgressMeter(DEFAULT_TITLE, i + 1, len(price_buckets), 'progress_key', msg, orientation='h')
+            ret = sg.OneLineProgressMeter(DEFAULT_TITLE, i, len(price_buckets), 'progress_key', msg, orientation='h')
             if not ret:
                 break
 
+            # do the work
             add_new_prebid_partner.main()
+
+            ret = sg.OneLineProgressMeter(DEFAULT_TITLE, i + 1, len(price_buckets), 'progress_key', msg, orientation='h')
+            if not ret:
+                break
 
         os.unlink(settings.GOOGLEADS_YAML_FILE)
 
