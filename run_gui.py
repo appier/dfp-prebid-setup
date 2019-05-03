@@ -1,7 +1,10 @@
 import tempfile
 import os
 
-import PySimpleGUI as sg
+try:
+    import PySimpleGUIWx as sg
+except ImportError:
+    import PySimpleGUI as sg
 
 from tasks import add_new_prebid_partner
 import settings
