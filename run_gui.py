@@ -67,6 +67,9 @@ def main():
         if not settings.DFP_TARGETED_AD_UNIT_NAMES:
             return
 
+        # setup as many creatives per line item as the adunit count
+        settings.DFP_NUM_CREATIVES_PER_LINE_ITEM = len(settings.DFP_TARGETED_AD_UNIT_NAMES)
+
         # start
         # FIXME: it's bad to override globals like this, but due to the structure of the original code we have no choice.
         settings.PREBID_BIDDER_CODE = None
