@@ -42,8 +42,8 @@ def main():
     settings.NO_CONFIRM = True
     try:
         # basic setup
-        values = setup_basic_info()
-        if not values:
+        event, values = setup_basic_info()
+        if event != 'OK':
             return
         settings.DFP_USER_EMAIL_ADDRESS = values['_NAME_']
         settings.DFP_ORDER_NAME = values['_ORDER_']
@@ -100,21 +100,29 @@ def main():
 
 def setup_basic_info():
     # https://github.com/PySimpleGUI/PySimpleGUI/blob/master/docs/cookbook.md
-    currencies = tuple(price_multipliers.keys())
-    layout = [
-        [sg.Text('Setup basic info:')],
-        [sg.Text('E-mail of Google Ad Manager account:', auto_size_text=True), sg.InputText(key='_NAME_', size=(32, 1))],
-        [sg.Text('GAM network code:', auto_size_text=True), sg.InputText('network', key='_NETWORK_', size=(32, 1))],
-        [sg.Text('Order Name', auto_size_text=True), sg.InputText('order', key='_ORDER_', size=(32, 1))],
-        [sg.Text('Advertiser Name', auto_size_text=True), sg.InputText('advertiser', key='_ADVERTISER_', size=(32, 1))],
-        [sg.Text('Select the currency of your GAM account:', auto_size_text=True)],
-        [sg.Listbox(values=currencies, default_values=('TWD', ), size=(40, 10), bind_return_key=True, key='_CURRENCY_')],
-        [sg.OK(), sg.Cancel()]
-    ]
-    window = sg.Window(DEFAULT_TITLE, layout)
-    event, values = window.Read()
+    while True:
+        currencies = tuple(price_multipliers.keys())
+        layout = [
+            [sg.Text('Setup basic info (all fields are required):')],
+            [sg.Text('E-mail of Google Ad Manager account:', auto_size_text=True), sg.InputText(key='_NAME_', size=(32, 1))],
+            [sg.Text('GAM network code:', auto_size_text=True), sg.InputText(key='_NETWORK_', size=(32, 1))],
+            [sg.Text('Order Name', auto_size_text=True), sg.InputText(key='_ORDER_', size=(32, 1))],
+            [sg.Text('Advertiser Name', auto_size_text=True), sg.InputText(key='_ADVERTISER_', size=(32, 1))],
+            [sg.Text('Select the currency of your GAM account:', auto_size_text=True)],
+            [sg.Listbox(values=currencies, default_values=('TWD', ), size=(40, 10), bind_return_key=True, key='_CURRENCY_')],
+            [sg.OK(), sg.Cancel()]
+        ]
+        window = sg.Window(DEFAULT_TITLE, layout)
+        event, values = window.Read()
+
+        if event == 'OK' and len(values) < 5:
+            sg.Popup('All fields are required!')
+            continue
+        else:
+            break
+
     window.Close()
-    return values if event == 'OK' else {}
+    return event, values
 
 
 def setup_adunits():
