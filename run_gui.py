@@ -79,7 +79,7 @@ def main():
             msg = 'Creating line items for price range: {min} - {max}; increment={inc}, {currency})'.format(
                 min=min_price, max=max_price, inc=increment, currency=currency
             )
-            ret = sg.OneLineProgressMeter(DEFAULT_TITLE, i + 1, len(price_buckets) 'progress_key', msg, orientation='h')
+            ret = sg.OneLineProgressMeter(DEFAULT_TITLE, i + 1, len(price_buckets), 'progress_key', msg, orientation='h')
             if not ret:
                 break
 
