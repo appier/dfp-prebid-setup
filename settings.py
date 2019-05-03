@@ -43,7 +43,7 @@ DFP_CREATE_ADVERTISER_IF_DOES_NOT_EXIST = False
 # If settings.DFP_ORDER_NAME is the same as an existing order, add the created 
 # line items to that order. If False, the program will exit rather than
 # modify an existing order.
-DFP_USE_EXISTING_ORDER_IF_EXISTS = False
+DFP_USE_EXISTING_ORDER_IF_EXISTS = True
 
 # Optional
 # Each line item should have at least as many creatives as the number of 
