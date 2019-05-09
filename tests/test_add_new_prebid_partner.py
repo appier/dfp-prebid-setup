@@ -1,5 +1,5 @@
 
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from mock import MagicMock, patch
 
@@ -8,7 +8,7 @@ import tasks.add_new_prebid_partner
 from dfp.exceptions import BadSettingException, MissingSettingException
 from tasks.add_new_prebid_partner import DFPValueIdGetter
 from tasks.price_utils import (
-  get_prices_array,
+  get_prices_array_from_price_bucket_list
 )
 
 email = 'fakeuser@example.com'
@@ -27,13 +27,15 @@ sizes = [
   },
 ]
 bidder_code = 'mypartner'
-price_buckets = {
-  'precision': 2,
-  'min' : 0,
-  'max' : 20,
-  'increment': 0.10,
-}
-prices = get_prices_array(price_buckets)
+price_buckets = [
+  {
+    'precision': 2,
+    'min': 0,
+    'max': 20,
+    'increment': 0.10,
+  }
+]
+prices = get_prices_array_from_price_bucket_list(price_buckets)
 
 @patch.multiple('settings',
   DFP_USER_EMAIL_ADDRESS=email,
@@ -81,6 +83,7 @@ class AddNewPrebidPartnerTests(TestCase):
     with self.assertRaises(MissingSettingException):
       tasks.add_new_prebid_partner.main()
 
+  @skip('When bidder is None, set for all bidders now.')
   def test_missing_bidder_code_setting(self, mock_dfp_client):
     """
     It throws an exception with a missing setting.
@@ -106,12 +109,12 @@ class AddNewPrebidPartnerTests(TestCase):
     It throws an exception of the price bucket setting
     is missing keys.
     """
-    settings.PREBID_PRICE_BUCKETS={
+    settings.PREBID_PRICE_BUCKETS=[{
       'precision': 2,
       'min' : 0,
       # 'max' : 20, # missing this key
       'increment': 0.10,
-    }
+    }]
     with self.assertRaises(BadSettingException):
       tasks.add_new_prebid_partner.main()
 
@@ -120,12 +123,12 @@ class AddNewPrebidPartnerTests(TestCase):
     It throws an exception of the price bucket setting
     has bad value types.
     """
-    settings.PREBID_PRICE_BUCKETS={
+    settings.PREBID_PRICE_BUCKETS=[{
       'precision': 2,
       'min' : '$0', # bad value type
       'max' : 20,
       'increment': 0.10,
-    }
+    }]
     with self.assertRaises(BadSettingException):
       tasks.add_new_prebid_partner.main()
 
@@ -134,12 +137,12 @@ class AddNewPrebidPartnerTests(TestCase):
     It throws an exception of the price bucket setting
     has bad value types.
     """
-    settings.PREBID_PRICE_BUCKETS={
+    settings.PREBID_PRICE_BUCKETS=[{
       'precision': 2,
       'min' : 0,
       'max' : 20,
       'increment': {'inc': 0.10}, # bad value type
-    }
+    }]
     with self.assertRaises(BadSettingException):
       tasks.add_new_prebid_partner.main()
 
