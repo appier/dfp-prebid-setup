@@ -39,6 +39,39 @@ def num_to_str(num, precision=2):
   """
   return '%.{0}f'.format(str(precision)) % num 
 
+
+def adjust_price_bucket_by_price_multiplier(price_bucket, price_multiplier):
+  """
+  Args:
+    price_bucket (object): the price bucket configuration
+    price_multiplier (int): the price_multiplier to adjust price bucket
+  :return: updated price_bucket
+  """
+  new_price_buckets = {
+    'precision': price_bucket['precision'],
+    'min': price_bucket['min'] * price_multiplier,
+    'max': price_bucket['max'] * price_multiplier,
+    'increment': price_bucket['increment'] * price_multiplier,
+  }
+  return new_price_buckets
+
+
+def get_prices_array_from_price_bucket_list(price_bucket_list):
+  """
+  Creates an array of prices from a list of price buckets.
+
+  Args:
+    price_bucket_list (list): a list of price bucket configuration
+  Returns:
+    an array of integers (list):
+  """
+  prices = []
+  for price_bucket in price_bucket_list:
+    prices.extend(get_prices_array(price_bucket))
+
+  return prices
+
+
 def get_prices_array(price_bucket):
   """
   Creates an array of price bucket cutoffs in micro-amounts
