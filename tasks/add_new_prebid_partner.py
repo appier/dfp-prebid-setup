@@ -5,7 +5,6 @@ import logging
 import os
 import sys
 from builtins import input
-from pprint import pprint
 
 from colorama import init
 
@@ -18,6 +17,7 @@ import dfp.create_orders
 import dfp.get_ad_units
 import dfp.get_advertisers
 import dfp.get_custom_targeting
+import dfp.get_line_items
 import dfp.get_placements
 import dfp.get_users
 from dfp.exceptions import (
@@ -25,7 +25,8 @@ from dfp.exceptions import (
   MissingSettingException
 )
 from tasks.price_utils import (
-  get_prices_array,
+  adjust_price_bucket_by_price_multiplier,
+  get_prices_array_from_price_bucket_list,
   get_prices_summary_string,
   micro_amount_to_num,
   num_to_str,
@@ -92,6 +93,7 @@ def setup_partner(user_email, advertiser_name, order_name, placements, ad_units,
   line_item_ids = dfp.create_line_items.create_line_items(line_items_config)
 
   # Associate creatives with line items.
+  logger.info("Associate creatives with line items...")
   dfp.associate_line_items_and_creatives.make_licas(line_item_ids,
     creative_ids, size_overrides=sizes)
 
@@ -195,6 +197,17 @@ def create_line_item_configs(prices, order_id, placement_ids, ad_unit_ids, bidde
       price=price_str
     )
 
+    # If the settings allow modifying an existing order, do so. Otherwise,
+    # throw an exception.
+    skip_existing_line_items = getattr(settings, 'DFP_SKIP_EXISTING_LINE_ITEMS', False)
+    if skip_existing_line_items:
+      existing_line_item_names = dfp.get_line_items.get_line_item_names_by_order_id(order_id)
+    else:
+      existing_line_item_names = []
+
+    if line_item_name in existing_line_item_names:
+      continue
+
     # The DFP targeting value ID for this `hb_pb` price value.
     hb_pb_value_id = HBPBValueGetter.get_value_id(price_str)
 
@@ -275,12 +288,12 @@ def main():
   if order_name is None:
     raise MissingSettingException('DFP_ORDER_NAME')
 
-  placements = getattr(settings, 'DFP_TARGETED_PLACEMENT_NAMES', None)
-  ad_units = getattr(settings, 'DFP_TARGETED_AD_UNIT_NAMES', None)
+  placements = getattr(settings, 'DFP_TARGETED_PLACEMENT_NAMES', [])
+  ad_units = getattr(settings, 'DFP_TARGETED_AD_UNIT_NAMES', [])
 
-  if ad_units is None and placements is None:
+  if not ad_units and not placements:
     raise MissingSettingException('DFP_TARGETED_PLACEMENT_NAMES or DFP_TARGETED_AD_UNIT_NAMES')
-  elif (placements is None or len(placements) < 1) and (ad_units is None or len(ad_units) < 1):
+  elif (not placements or len(placements) < 1) and (not ad_units or len(ad_units) < 1):
     raise BadSettingException('The setting "DFP_TARGETED_PLACEMENT_NAMES" or "DFP_TARGETED_AD_UNIT_NAMES" '
       'must contain at least one DFP placement or ad unit.')
 
@@ -305,15 +318,22 @@ def main():
   if bidder_code is None:
     logger.warning('PREBID_BIDDER_CODE is not specified. Create one set of line items for all bidders.')
 
-  price_buckets = getattr(settings, 'PREBID_PRICE_BUCKETS', None)
-  if price_buckets is None:
+  price_bucket_list = getattr(settings, 'PREBID_PRICE_BUCKETS', None)
+  if price_bucket_list is None:
     raise MissingSettingException('PREBID_PRICE_BUCKETS')
 
-  check_price_buckets_validity(price_buckets)
+  price_multipliers = getattr(settings, 'PRICE_MULTIPLIERS', {})
+  price_multiplier = price_multipliers.get(currency_code, 1)
 
-  prices = get_prices_array(price_buckets)
+  # Validate price buckets and adjust by price_multiplier
+  adjusted_price_buckets = []
+  for price_bucket in price_bucket_list:
+    check_price_buckets_validity(price_bucket)
+    adjusted_price_buckets.append(adjust_price_bucket_by_price_multiplier(price_bucket, price_multiplier))
+
+  prices = get_prices_array_from_price_bucket_list(adjusted_price_buckets)
   prices_summary = get_prices_summary_string(prices,
-    price_buckets['precision'])
+    price_bucket_list[0]['precision'])
 
   logger.info(
     u"""
@@ -329,12 +349,12 @@ def main():
       {name_start_format}ad units{format_end} = {value_start_format}{ad_units}{format_end}
 
     """.format(
-      num_line_items = len(prices),
+      num_line_items=len(prices),
       order_name=order_name,
       advertiser=advertiser_name,
       user_email=user_email,
       prices_summary=prices_summary,
-      bidder_code=bidder_code,
+      bidder_code=bidder_code or '(Targeting all bidders)',
       placements=placements,
       ad_units=ad_units,
       sizes=sizes,
@@ -343,16 +363,14 @@ def main():
       value_start_format=color.BLUE,
     ))
 
-  if getattr(settings, 'NO_CONFIRM'):
-    ok = 'y'
-  else:
-    ok = input('Is this correct? (y/n)\n')
+  ok = input('Is thisy correct? (y/n)\n')
 
   if ok != 'y':
     logger.info('Exiting.')
     return
 
   setup_partner(user_email, advertiser_name, order_name, placements, ad_units, sizes, bidder_code, prices, num_creatives, currency_code)
+
 
 if __name__ == '__main__':
   main()
