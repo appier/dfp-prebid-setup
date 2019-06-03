@@ -38,12 +38,17 @@ DFP_PLACEMENT_SIZES = [
 
 # Whether we should create the advertiser in DFP if it does not exist.
 # If False, the program will exit rather than create an advertiser.
-DFP_CREATE_ADVERTISER_IF_DOES_NOT_EXIST = False
+DFP_CREATE_ADVERTISER_IF_DOES_NOT_EXIST = True
 
 # If settings.DFP_ORDER_NAME is the same as an existing order, add the created 
 # line items to that order. If False, the program will exit rather than
 # modify an existing order.
 DFP_USE_EXISTING_ORDER_IF_EXISTS = False
+
+# Optional
+# If the line item exists in the existing order, ignore them.
+# Only use this when the new line items has the same configurations, except prices.
+DFP_SKIP_EXISTING_LINE_ITEMS = False
 
 # Optional
 # Each line item should have at least as many creatives as the number of 
@@ -55,27 +60,53 @@ DFP_USE_EXISTING_ORDER_IF_EXISTS = False
 #
 # This will default to the number of placements specified in
 # `DFP_TARGETED_PLACEMENT_NAMES`.
-# DFP_NUM_CREATIVES_PER_LINE_ITEM = 2
+DFP_NUM_CREATIVES_PER_LINE_ITEM = 4
 
 # Optional
 # The currency to use in DFP when setting line item CPMs. Defaults to 'USD'.
-# DFP_CURRENCY_CODE = 'USD'
+DFP_CURRENCY_CODE = 'USD'
 
 #########################################################################
 # PREBID SETTINGS
 #########################################################################
 
+# When bidder code is None, create a set of line items for all bidders.
+# Otherwise, set line item targeting 'hb_bidder' to the specified bidder.
 PREBID_BIDDER_CODE = None
+
+
+#########################################################################
+# PREBID PRICE BUCKET SETTINGS
+#########################################################################
 
 # Price buckets. This should match your Prebid settings for the partner. See:
 # http://prebid.org/dev-docs/publisher-api-reference.html#module_pbjs.setPriceGranularity
-# FIXME: this should be an array of buckets. See:
-# https://github.com/prebid/Prebid.js/blob/8fed3d7aaa814e67ca3efc103d7d306cab8c692c/src/cpmBucketManager.js
-PREBID_PRICE_BUCKETS = {
-  'precision': 2,
-  'min' : 0,
-  'max' : 20,
-  'increment': 0.10,
+PREBID_PRICE_BUCKETS = [
+  {
+    'precision': 2,
+    'min': 0,
+    'max': 2.99,
+    'increment': 0.01
+  },
+  {
+    'precision': 2,
+    'min': 3.0,
+    'max': 7.95,
+    'increment': 0.05
+  },
+  {
+    'precision': 2,
+    'min': 8.0,
+    'max': 20.0,
+    'increment': 0.50
+  }
+]
+
+# The price multiplier to adjust price buckets. This should match the currency settings.
+PRICE_MULTIPLIERS = {
+    'TWD': 30,
+    'JPY': 110,
+    'USD': 1
 }
 
 #########################################################################
